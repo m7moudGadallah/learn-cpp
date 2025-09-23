@@ -53,8 +53,9 @@ int main() {
 
                 ++last_index;
                 break;
+            }
 
-            case PRINT_ALL_EMP_CHOICE:
+            case PRINT_ALL_EMP_CHOICE: {
                 for (int i = 0; i < last_index; ++i) {
                     cout << emp_names[i] << ' ' << emp_ages[i] << ' ' << emp_salaries[i] << ' ' << emp_genders[i] << '\n';
                 }
