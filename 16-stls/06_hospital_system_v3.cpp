@@ -4,7 +4,6 @@ using namespace std;
 
 const int NUM_OF_SPECIALIZATIONS = 20;
 const int SPECIALIZATION_CAPACITY = 5;
-const string PatientStatus::PATIENT_STATUS[] = { "regular", "urgent" };
 
 const string specialization[NUM_OF_SPECIALIZATIONS] = {
     "Pediatrics",
@@ -227,6 +226,9 @@ void system_bootstrap() {
         }
     }
 }
+
+// definition outside the struct
+const string PatientStatus::PATIENT_STATUS[] = { "regular", "urgent" };
 
 int main() {
     system_bootstrap();
