@@ -4,11 +4,7 @@ using namespace std;
 
 const int NUM_OF_SPECIALIZATIONS = 20;
 const int SPECIALIZATION_CAPACITY = 5;
-const int MENU_CODE__ADD_PATIENT = 1;
-const int MENU_CODE__PRINT_ALL_PATIENTS = 2;
-const int MENU_CODE__GET_NEXT_PATIENT = 3;
-const int MENU_CODE__EXIT = 4;
-const string PATIENT_STATUS[]{ "regular", "urgent" };
+const string PatientStatus::PATIENT_STATUS[] = { "regular", "urgent" };
 
 const string specialization[NUM_OF_SPECIALIZATIONS] = {
     "Pediatrics",
@@ -33,13 +29,35 @@ const string specialization[NUM_OF_SPECIALIZATIONS] = {
     "Nephrology"
 };
 
+// Enums
+struct PatientStatus {
+private:
+    static const string PATIENT_STATUS[];
+public:
+    static const int REGULAR = 0;
+    static const int URGENT = 0;
+
+    static string to_string(int code) {
+        return PatientStatus::PATIENT_STATUS[code];
+    }
+};
+
+struct MenuOptions {
+public:
+    static const int ADD_PATIENT = 1;
+    static const int PRINT_ALL_PATIENTS = 2;
+    static const int GET_NEXT_PATIENT = 3;
+    static const int EXIT = 4;
+};
+
+// Datastructures
 struct HospitalQueueEntry {
 public:
     string name;
     int status;
 
     string to_string() const {
-        return name + " " + PATIENT_STATUS[status];
+        return name + " " + PatientStatus::to_string(status);
     }
 };
 
@@ -134,7 +152,7 @@ bool add_patient() {
     const HospitalQueueEntry entry{ name, status };
 
     // Regular Patient
-    if (PATIENT_STATUS[status] == PATIENT_STATUS[0]) {
+    if (status == PatientStatus::REGULAR) {
         spec_queue.add_end(entry);
         return true;
     }
@@ -190,18 +208,18 @@ int menu() {
 void system_bootstrap() {
     int choice;
 
-    while ((choice = menu()) != MENU_CODE__EXIT) {
+    while ((choice = menu()) != MenuOptions::EXIT) {
         switch (choice) {
-            case MENU_CODE__ADD_PATIENT: {
+            case MenuOptions::ADD_PATIENT: {
                 if (!add_patient()) {
                     cout << "Sorry we can't add more patients for this specialization!\n";
                 }
                 break;
             }
-            case MENU_CODE__PRINT_ALL_PATIENTS:
+            case MenuOptions::PRINT_ALL_PATIENTS:
                 print_patients();
                 break;
-            case MENU_CODE__GET_NEXT_PATIENT:
+            case MenuOptions::GET_NEXT_PATIENT:
                 get_next_patient();
                 break;
             default:
