@@ -1,10 +1,10 @@
 #include <iostream>
 #include <vector>
+#include <unordered_set>
 
 using namespace std;
 
 // Consts
-const int MAX_NUM_OF_BOOKS_IN_LIBRARY = 100;
 const int MAX_NUM_OF_BORROWED_BOOKS_BY_USER = 10;
 const int SEARCH_NOT_FOUND_CODE = -1;
 
@@ -17,46 +17,34 @@ private:
 public:
     int id;
     string name;
-    int borrowed_books_ids[User::BORROWING_BOOKS_CAPCITY];
-    int borrowed_books_count;
+    unordered_set<int> borrowed_books_ids;
 
 public:
     User() {
         id = ++sequence_id;
         name = "";
-        borrowed_books_count = 0;
     }
 
     bool can_borrow() const {
-        return borrowed_books_count < User::BORROWING_BOOKS_CAPCITY;
+        return borrowed_books_ids.size() < User::BORROWING_BOOKS_CAPCITY;
     }
 
 
     bool borrow_book(int book_id) {
-        if (!can_borrow())  return false;
-        borrowed_books_ids[borrowed_books_count++] = book_id;
+        if (!can_borrow() and !has_borrowed(book_id))  return false;
+        borrowed_books_ids.insert(book_id);
         return true;
     }
 
-    int find_borrowed_book(int book_id) const {
-        for (int i = 0; i < borrowed_books_count; ++i) {
-            if (borrowed_books_ids[i] == book_id)
-                return i;
-        }
-        return SEARCH_NOT_FOUND_CODE;
-    }
-
     bool has_borrowed(int book_id) const {
-        return find_borrowed_book(book_id) >= 0;
+        return borrowed_books_ids.find(book_id) != borrowed_books_ids.end();
     }
 
     bool return_book(int book_id) {
-        int found = find_borrowed_book(book_id);
+        if (!has_borrowed(book_id)) return false;
 
-        if (found == SEARCH_NOT_FOUND_CODE) return false;
+        borrowed_books_ids.erase(book_id);
 
-        swap(borrowed_books_ids[found], borrowed_books_ids[borrowed_books_count - 1]);
-        --borrowed_books_count;
         return true;
     }
 
@@ -92,7 +80,7 @@ public:
     }
 
 
-    bool can_be_borrowed() {
+    bool can_be_borrowed() const {
         return quantity > 0;
     }
 
@@ -113,7 +101,7 @@ public:
         return true;
     }
 
-    bool is_borrowed() {
+    bool is_borrowed() const {
         return total_borrowed > 0;
     }
 
@@ -153,13 +141,13 @@ public:
             return;
         }
 
-        for (const auto &user : users) {
+        for (const auto& user : users) {
             cout << user.to_string() << '\n';
         }
     }
 
     void display_who_borrowed(Book book) {
-        for (const auto &user : users) {
+        for (const auto& user : users) {
             if (user.has_borrowed(book.id)) {
                 cout << user.to_string() << '\n';
             }
@@ -184,30 +172,13 @@ public:
 
 struct BookController {
 private:
-    static const int CAPCITY = MAX_NUM_OF_BOOKS_IN_LIBRARY;
-    Book books[BookController::CAPCITY];
-    int length = 0;
-
-private:
-    bool is_list_empty() const {
-        return length <= 0;
-    }
-
-    bool is_list_full() const {
-        return length >= BookController::CAPCITY;
-    }
-
+    vector<Book> books;
 public:
     void add_book() {
-        if (is_list_full()) {
-            cout << "Sorry, book list is fully so we can't accept new books!";
-            return;
-        }
-
         cout << "Enter book info: name & total quantity: ";
         Book book{};
         cin >> book.name >> book.quantity;
-        books[length++] = book;
+        books.emplace_back(book);
     }
 
     void search_books_by_prefix() const {
@@ -217,10 +188,10 @@ public:
 
         bool found = false;
 
-        for (int i = 0; i < length; ++i) {
-            if (books[i].is_name_prefix(prefix_name)) {
+        for (const auto& book : books) {
+            if (book.is_name_prefix(prefix_name)) {
                 found = true;
-                cout << books[i].to_string() << '\n';
+                cout << book.to_string() << '\n';
             }
         }
 
@@ -230,21 +201,21 @@ public:
     }
 
     void display_by_sorted_names() const {
-        if (is_list_empty()) {
+        if (books.empty()) {
             cout << "No books available to display!\n";
             return;
         }
 
-        int sorted_idxs[length];
-        for (int i = 0;i < length; ++i) {
+        int sorted_idxs[books.size()];
+        for (int i = 0;i < books.size(); ++i) {
             sorted_idxs[i] = i;
         }
 
         // selection sort by name
-        for (int i = 0; i < length; ++i) {
+        for (int i = 0; i < books.size(); ++i) {
             int mn_idx = i;
 
-            for (int j = i + 1; j < length; ++j) {
+            for (int j = i + 1; j < books.size(); ++j) {
                 if (books[sorted_idxs[j]].name < books[sorted_idxs[mn_idx]].name) {
                     mn_idx = j;
                 }
@@ -259,18 +230,18 @@ public:
     }
 
     void display_by_sorted_ids() const {
-        if (is_list_empty()) {
+        if (books.empty()) {
             cout << "No books available to display!\n";
             return;
         }
 
-        for (int i = 0; i < length; ++i) {
+        for (int i = 0; i < books.size(); ++i) {
             cout << books[i].to_string() << '\n';
         }
     }
 
     int find_book_by_name(string name) const {
-        for (int i = 0; i < length; ++i) {
+        for (int i = 0; i < books.size(); ++i) {
             if (books[i].name == name) return i;
         }
         return SEARCH_NOT_FOUND_CODE;
