@@ -1,9 +1,9 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
 // Consts
-const int MAX_NUM_OF_USERS_IN_LIBRARY = 100;
 const int MAX_NUM_OF_BOOKS_IN_LIBRARY = 100;
 const int MAX_NUM_OF_BORROWED_BOOKS_BY_USER = 10;
 const int SEARCH_NOT_FOUND_CODE = -1;
@@ -27,7 +27,7 @@ public:
         borrowed_books_count = 0;
     }
 
-    bool can_borrow() {
+    bool can_borrow() const {
         return borrowed_books_count < User::BORROWING_BOOKS_CAPCITY;
     }
 
@@ -38,7 +38,7 @@ public:
         return true;
     }
 
-    int find_borrowed_book(int book_id) {
+    int find_borrowed_book(int book_id) const {
         for (int i = 0; i < borrowed_books_count; ++i) {
             if (borrowed_books_ids[i] == book_id)
                 return i;
@@ -46,7 +46,7 @@ public:
         return SEARCH_NOT_FOUND_CODE;
     }
 
-    bool has_borrowed(int book_id) {
+    bool has_borrowed(int book_id) const {
         return find_borrowed_book(book_id) >= 0;
     }
 
@@ -137,52 +137,37 @@ struct MenuOptions {
 
 struct UserController {
 private:
-    static const int CAPCITY = MAX_NUM_OF_USERS_IN_LIBRARY;
-    User users[UserController::CAPCITY];
-    int length = 0;
+    vector<User> users;
 
-private:
-    bool is_list_empty() const {
-        return length <= 0;
-    }
-
-    bool is_list_full() const {
-        return length >= UserController::CAPCITY;
-    }
 public:
     void add_user() {
-        if (is_list_full()) {
-            cout << "Sorry, user list is fully so we can't accept new users!";
-            return;
-        }
-
         cout << "Enter user info: name: ";
         User user{};
         cin >> user.name;
-        users[length++] = user;
+        users.emplace_back(user);
     }
 
     void display_users() const {
-        if (is_list_empty()) {
+        if (users.empty()) {
             cout << "No available users to display!\n";
             return;
         }
 
-        for (int i = 0; i < length; ++i) {
-            cout << users[i].to_string() << '\n';
+        for (const auto &user : users) {
+            cout << user.to_string() << '\n';
         }
     }
 
     void display_who_borrowed(Book book) {
-        for (int i = 0; i < length; ++i) {
-            if (users[i].has_borrowed(book.id)) {
-                cout << users[i].to_string() << '\n';
+        for (const auto &user : users) {
+            if (user.has_borrowed(book.id)) {
+                cout << user.to_string() << '\n';
             }
         }
     }
 
     int find_user_by_name(string name) const {
-        for (int i = 0; i < length; ++i) {
+        for (int i = 0; i < users.size(); ++i) {
             if (users[i].name == name) return i;
         }
         return SEARCH_NOT_FOUND_CODE;
